@@ -6,6 +6,7 @@ import (
   "net/http"
   "encoding/json"
   "errors"
+  "time"
 )
 
 // Item describes a Reddit item.
@@ -41,10 +42,17 @@ func (i Item) String() string {
 
 // Get fetches the most recent items in the subreddit.
 func Get(reddit string) ([]Item, error) {
+  var client = &http.Client{
+    Timeout: time.Second * 30,
+  }
+
   url := fmt.Sprintf("http://reddit.com/r/%s.json", reddit)
 
-  resp, err := http.Get(url)
+  req, err := http.NewRequest("GET", url, nil)
+  
+  req.Header.Set("User-Agent", "Geddit")
 
+  resp, err := client.Do(req)
   if err != nil {
     return nil, err
   }
